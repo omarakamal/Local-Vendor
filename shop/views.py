@@ -1,12 +1,9 @@
-from django.shortcuts import render
-
-# Create your views here.
-from rest_framework import viewsets, filters
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import viewsets
 from django.db.models import Q
 from .models import Category, Product
-from .serializers import CategorySerializer, ProductListSerializer, ProductDetailSerializer
+from .serializers import (
+    CategorySerializer, ProductListSerializer, ProductDetailSerializer
+)
 from .permissions import IsAdminOrReadOnly
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -30,18 +27,22 @@ class ProductViewSet(viewsets.ModelViewSet):
         min_price = self.request.query_params.get("min_price")
         max_price = self.request.query_params.get("max_price")
         in_stock = self.request.query_params.get("in_stock")
+        sort = self.request.query_params.get("sort")
 
         if q:
-            qs = qs.filter(Q(name_en__icontains=q) | Q(description_en__icontains=q) | Q(name_ar__icontains=q) | Q(description_ar__icontains=q))
+            qs = qs.filter(
+                Q(name_en__icontains=q) | Q(description_en__icontains=q) |
+                Q(name_ar__icontains=q) | Q(description_ar__icontains=q)
+            )
         if cat:
-            qs = qs.filter(Q(category__slug=cat) | Q(category__parent__slug=cat))
+            qs = qs.filter(category__slug=cat)
         if min_price:
             qs = qs.filter(price_cents__gte=int(min_price))
         if max_price:
             qs = qs.filter(price_cents__lte=int(max_price))
         if in_stock == "1":
             qs = qs.filter(stock_qty__gt=0)
-        sort = self.request.query_params.get("sort")
+
         if sort == "price_asc": qs = qs.order_by("price_cents")
         elif sort == "price_desc": qs = qs.order_by("-price_cents")
         elif sort == "newest": qs = qs.order_by("-id")

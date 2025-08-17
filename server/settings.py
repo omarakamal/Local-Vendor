@@ -111,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 
-AUTH_USER_MODEL = "shop.User"
+# AUTH_USER_MODEL = "shop.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -133,6 +133,13 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
 }
 
+
+# S3 Configuration
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_S3_REGION = os.getenv("AWS_S3_REGION", "eu-central-1")
+AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET")
+AWS_S3_PRESIGN_EXPIRES = int(os.getenv("AWS_S3_PRESIGN_EXPIRES", "900"))
 
 
 

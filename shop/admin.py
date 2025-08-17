@@ -1,12 +1,11 @@
 from django.contrib import admin
+from .models import Category, Product, ProductImage
+from django.contrib.auth.models import User
 
-# Register your models here.
-from django.contrib import admin
-from .models import User, Category, Product, ProductImage
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ("id","username","email","role","is_active","is_staff")
+# @admin.register(User)
+# class UserAdmin(admin.ModelAdmin):
+#     list_display = ("id","username","email","role","is_active","is_staff")
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -21,6 +20,6 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("id","name_en","parent","is_active","sort_order")
+    list_display = ("id","name_en","is_active","sort_order")
     list_editable = ("is_active","sort_order")
     prepopulated_fields = {"slug": ("name_en",)}
