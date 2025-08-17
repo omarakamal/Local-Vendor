@@ -18,6 +18,9 @@ class Category(models.Model):  # flat categories (no parent)
 
     def __str__(self): return self.name_en
 
+    class Meta:
+        db_table = "category"
+
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     name_en = models.CharField(max_length=220)
@@ -41,6 +44,9 @@ class Product(models.Model):
 
     def __str__(self): return self.name_en
 
+    class Meta:
+        db_table = "product"
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     object_key = models.CharField(max_length=512)  # S3 object key only
@@ -48,6 +54,8 @@ class ProductImage(models.Model):
     alt_ar = models.CharField(max_length=200, blank=True, default="")
     sort_order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        db_table = "product_image"
 
 
 
@@ -56,11 +64,17 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        db_table = "cart"
+
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     qty = models.PositiveIntegerField(default=1)
     unit_price_cents = models.PositiveIntegerField()  # snapshot at add-time
+
+    class Meta:
+        db_table = "cart_item"
 
 class Order(models.Model):
     STATUS = (("pending","pending"),("paid","paid"),("shipped","shipped"),("cancelled","cancelled"),("refunded","refunded"))
@@ -77,6 +91,9 @@ class Order(models.Model):
     payment_provider = models.CharField(max_length=32, blank=True, default="")
     payment_ref = models.CharField(max_length=64, blank=True, default="")
     placed_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "orders"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
@@ -85,3 +102,35 @@ class OrderItem(models.Model):
     qty = models.PositiveIntegerField()
     unit_price_cents = models.PositiveIntegerField()
     total_cents = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "order_item"
+
+class Rating(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="ratings")
+    order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
+    stars = models.PositiveSmallIntegerField()  # 1..5
+    comment = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user","product")
+        db_table = "ratings"
+
+class Complaint(models.Model):
+    TYPE = (("product","product"),("delivery","delivery"),("payment","payment"),("other","other"))
+    STATUS = (("new","new"),("in_progress","in_progress"),("resolved","resolved"),("closed","closed"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    order_id = models.OneToOneField(Order,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    type = models.CharField(max_length=20, choices=TYPE)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS, default="new")
+    admin_note = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "complaints"

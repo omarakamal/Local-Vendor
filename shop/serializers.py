@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Category, Product, ProductImage, Cart, CartItem, Order, OrderItem
 
+from rest_framework import serializers
+from .models import Product
+from .services import compute_totals, generate_order_number
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,3 +102,24 @@ class CheckoutSerializer(serializers.Serializer):
             )
         cart.items.all().delete()
         return order
+
+
+
+from rest_framework import serializers
+from .models import Rating, Complaint
+
+class RatingCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ["stars","comment","product","order_item"]
+    def validate(self, attrs):
+        oi = attrs["order_item"]
+        if oi.product_id != attrs["product"].id or oi.order.user_id != self.context["request"].user.id:
+            raise serializers.ValidationError("Verified purchase required.")
+        return attrs
+
+class ComplaintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Complaint
+        fields = ["id","order_id","type","message","status","admin_note","created_at"]
+        read_only_fields = ["status","admin_note","created_at"]

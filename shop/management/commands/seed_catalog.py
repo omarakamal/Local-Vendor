@@ -23,3 +23,24 @@ class Command(BaseCommand):
         ProductImage.objects.create(product=p2, object_key="seed/coffee.jpg", alt_en="Coffee pack")
 
         self.stdout.write(self.style.SUCCESS("Seeded categories/products."))
+from django.core.management.base import BaseCommand
+from shop.models import Category, Product, ProductImage
+
+class Command(BaseCommand):
+    help = "Seed flat categories/products (no parents)"
+
+    def handle(self, *args, **opts):
+        ProductImage.objects.all().delete()
+        Product.objects.all().delete()
+        Category.objects.all().delete()
+
+        drinks = Category.objects.create(name_en="Drinks", name_ar="مشروبات", sort_order=1)
+        snacks = Category.objects.create(name_en="Snacks", name_ar="وجبات خفيفة", sort_order=2)
+
+        p1 = Product.objects.create(category=drinks, name_en="Arabic Coffee", name_ar="قهوة عربية", sku="CAF-001", price_cents=3000, stock_qty=40)
+        p2 = Product.objects.create(category=snacks, name_en="Dates (Ajwa)", name_ar="تمر عجوة", sku="DAT-001", price_cents=4500, stock_qty=25)
+
+        ProductImage.objects.create(product=p1, object_key="seed/coffee.jpg", alt_en="Coffee")
+        ProductImage.objects.create(product=p2, object_key="seed/dates.jpg", alt_en="Dates")
+
+        self.stdout.write(self.style.SUCCESS("Seeded categories/products."))
