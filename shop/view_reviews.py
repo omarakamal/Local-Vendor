@@ -3,6 +3,8 @@ from django.db.models import F
 from .serializers import RatingCreateSerializer, ComplaintSerializer
 from .models import Rating, Complaint
 from .models import Product
+from django.db import models
+
 
 class CreateRatingView(generics.CreateAPIView):
     serializer_class = RatingCreateSerializer
